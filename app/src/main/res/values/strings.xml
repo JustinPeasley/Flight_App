@@ -2,5 +2,8 @@
     <string name="app_name">Flight_App</string>
     <string name="action_settings">Settings</string>
 
-    <string name="home_header">My Flights</string>
+    <string name="home_header">Noto Sans</string>
+
+    <!-- add flight dialog box -->
+    <string name="add_flight_header">Add Flight</string>
 </resources>
