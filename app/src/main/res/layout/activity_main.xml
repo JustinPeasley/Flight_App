@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -21,6 +22,7 @@
             <!-- search and add buttons-->
             <ImageButton
                 android:id="@+id/search"
+                android:contentDescription="@string/search"
                 android:src="@drawable/search"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:layout_width="50dp"
@@ -30,6 +32,7 @@
 
             <ImageButton
                 android:id="@+id/addflight"
+                android:contentDescription="@string/add_flight_header"
                 android:src="@drawable/plus"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:layout_width="50dp"
@@ -52,7 +55,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginTop="-5dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:background="@drawable/circle"
                 app:layout_constraintEnd_toStartOf="@+id/view"
                 app:layout_constraintTop_toTopOf="@+id/view" />
@@ -61,7 +64,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginTop="-5dp"
-                android:layout_marginLeft="5dp"
+                android:layout_marginStart="5dp"
                 android:background="@drawable/circle"
                 app:layout_constraintStart_toEndOf="@+id/view"
                 app:layout_constraintTop_toTopOf="@+id/view" />

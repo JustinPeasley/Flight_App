@@ -4,6 +4,10 @@
 
     <string name="home_header">Noto Sans</string>
 
+    <!-- button descriptions -->
+    <string name="search">Search</string>
+
     <!-- add flight dialog box -->
     <string name="add_flight_header">Add Flight</string>
+
 </resources>

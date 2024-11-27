@@ -1,5 +1,9 @@
 package edu.commonwealthu.flight_app;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +33,8 @@ public class Plane {
      */
     public Plane(String fNum) {
         uriCall = "https://aerodatabox.p.rapidapi.com/flights/number/" + fNum;
-        getData();
+        getData(); //api call
+        //parseData();
     }
 
     /**
@@ -40,25 +45,35 @@ public class Plane {
 
         Request request = new Request.Builder()
                 .url(uriCall)
-                .header("x-rapidapi-key", "")
+                .header("x-rapidapi-key", "1aa8bbc1b2msh5062d99bafbbe82p109479jsnee0b36ad902a")
                 .header("x-rapidapi-host", "aerodatabox.p.rapidapi.com")
                 .get()
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String responseBody = response.body().string();
-                JSONArray arrayData = new JSONArray(responseBody); // Temp array to hold data
-                flightData = arrayData.getJSONObject(0); // Move data to JSONObject for parsing
-                System.out.println(arrayData.toString(4)); // Pretty print JSON array
-            } else {
-                System.err.println("API call failed: " + response.code() + " " + response.message());
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                e.printStackTrace();
+                System.err.println("API call failed");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        String responseBody = response.body().string();
+                        JSONArray arrayData = new JSONArray(responseBody); // Temp array to hold data
+                        flightData = arrayData.getJSONObject(0); // Move data to JSONObject for parsing
+                        System.out.println(arrayData.toString(4)); // Pretty print JSON array
+                    } catch (JSONException e) {
+                        //noinspection CallToPrintStackTrace
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.err.println("API call failed: " + response.code() + " " + response.message());
+                }
+            }
+        });
     }
 
 
@@ -87,26 +102,52 @@ public class Plane {
      * @return array of information
      */
     public String[] getInfo() throws JSONException {
-        String[] data = new String[3];
+        String[] data = new String[4];
 
-        //parse data
-        JSONObject depAirport;  //departure airport name
-        depAirport = departure.getJSONObject("airport");
-        data[0] = depAirport.getString("name");
+        try {
+            Log.d("TAG", "getInfo: Starting");
+            if (flightData != null) {
+                //parse data
+                Log.d("TAG", "getInfo: initialing info grab");
+                Log.d("TAG", "getInfo: depature = " +  departure.toString());
+                JSONObject depAirport;  //departure airport name
+                depAirport = departure.getJSONObject("airport");
+                data[0] = depAirport.getString("name");
+                Log.d("TAG", "getInfo: depAirport fail");
 
-        JSONObject depTime;     //departure time
-        depTime = depAirport.getJSONObject("scheduledTime");
-        data[1] = depTime.getString("local");
+                JSONObject depTime;     //departure time
+                depTime = departure.getJSONObject("scheduledTime");
+                data[1] = depTime.getString("local");
+                Log.d("TAG", "getInfo: depTime fail");
 
 
-        JSONObject arrAirport; //arrival airport
-        arrAirport = arrival.getJSONObject("airport");
-        data[2] = arrAirport.getString("name");
+                JSONObject arrAirport; //arrival airport
+                arrAirport = arrival.getJSONObject("airport");
+                data[2] = arrAirport.getString("name");
+                Log.d("TAG", "getInfo: arrAirport");
 
-        JSONObject arrTime;     //arrival time
-        arrTime = arrAirport.getJSONObject("scheduledTime");
-        data[3] = arrTime.getString("local");
+                JSONObject arrTime;     //arrival time
+                arrTime = arrival.getJSONObject("scheduledTime");
+                data[3] = arrTime.getString("local");
+                Log.d("TAG", "getInfo: arrTime fail");
 
+            } else { //if can't find data return defaults
+                System.out.println("default can't parse !!");
+                data[0] = "Unknown Departure Airport";
+                data[1] = "00:00";
+                data[2] = "Unknown Arrival Airport";
+                data[3] = "00:00";
+                Log.d("TAG", "getInfo: else fail");
+            }
+        } catch (JSONException e) {
+            //return defaults
+            Log.d("TAG", "getInfo catch: ");
+            data[0] = "Unknown Departure Airport";
+            data[1] = "00:00";
+            data[2] = "Unknown Arrival Airport";
+            data[3] = "00:00";
+            Log.d("TAG", "getInfo: Catch failed");
+        }
         return data;
     }
 
