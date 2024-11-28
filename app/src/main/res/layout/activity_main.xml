@@ -8,97 +8,112 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:background="@drawable/top_card_background"
-        android:elevation="8dp">
+        android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
+            android:id="@+id/frameLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="400dp"
+            android:background="@drawable/top_card_background"
+            android:elevation="8dp"
+            tools:ignore="MissingConstraints">
 
-            <!-- search and add buttons-->
-            <ImageButton
-                android:id="@+id/search"
-                android:contentDescription="@string/search"
-                android:src="@drawable/search"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                tools:ignore="MissingConstraints"/>
-
-            <ImageButton
-                android:id="@+id/addflight"
-                android:contentDescription="@string/add_flight_header"
-                android:src="@drawable/plus"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                app:layout_constraintRight_toRightOf="parent"
-                tools:ignore="MissingConstraints"/>
-
-            <!-- graphic design of arrival -> destination -->
-            <View
-                android:id="@+id/view"
-                android:layout_width="250dp"
-                android:layout_height="10dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/travel_line"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/header_text" />
-
-            <View
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="-5dp"
-                android:layout_marginEnd="5dp"
-                android:background="@drawable/circle"
-                app:layout_constraintEnd_toStartOf="@+id/view"
-                app:layout_constraintTop_toTopOf="@+id/view" />
-
-            <View
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="-5dp"
-                android:layout_marginStart="5dp"
-                android:background="@drawable/circle"
-                app:layout_constraintStart_toEndOf="@+id/view"
-                app:layout_constraintTop_toTopOf="@+id/view" />
-
-            <TextView
-                android:id="@+id/header_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/home_header"
-                android:textSize="50sp"
-                android:textFontWeight="400"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <GridLayout
-                android:id="@+id/infoDisplayGrid"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:columnCount="2"
-                android:rowCount="3"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                tools:ignore="MissingConstraints">
+                android:layout_height="match_parent">
 
-            </GridLayout>
+                <!-- search and add buttons-->
+                <ImageButton
+                    android:id="@+id/search"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/search"
+                    android:src="@drawable/search"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    tools:ignore="MissingConstraints" />
+
+                <ImageButton
+                    android:id="@+id/addflight"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/add_flight_header"
+                    android:src="@drawable/plus"
+                    app:layout_constraintRight_toRightOf="parent"
+                    tools:ignore="MissingConstraints" />
+
+                <!-- graphic design of arrival -> destination -->
+                <View
+                    android:id="@+id/view"
+                    android:layout_width="250dp"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/travel_line"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/header_text" />
+
+                <View
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginTop="-5dp"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/circle"
+                    app:layout_constraintEnd_toStartOf="@+id/view"
+                    app:layout_constraintTop_toTopOf="@+id/view" />
+
+                <View
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="-5dp"
+                    android:background="@drawable/circle"
+                    app:layout_constraintStart_toEndOf="@+id/view"
+                    app:layout_constraintTop_toTopOf="@+id/view" />
+
+                <TextView
+                    android:id="@+id/header_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/home_header"
+                    android:textFontWeight="400"
+                    android:textSize="50sp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <GridLayout
+                    android:id="@+id/infoDisplayGrid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    android:columnCount="2"
+                    android:rowCount="3"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed"
+                    tools:ignore="MissingConstraints">
+
+                </GridLayout>
 
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/flightCards"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/frameLayout"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

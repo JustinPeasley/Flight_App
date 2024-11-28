@@ -1,12 +1,13 @@
 package edu.commonwealthu.flight_app;
 
 import android.annotation.SuppressLint;
-import android.icu.text.IDNA;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.navigation.ui.AppBarConfiguration;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.ActivityInfo;
 
@@ -31,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private int displayWidth;
     private int displayHeight;
-    private GridLayout InfoGrid;
+    private GridLayout infoGrid;
+    private RecyclerView recycle;
 
     private Plane curFlight;
 
@@ -42,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
         displayWidth = getResources().getDisplayMetrics().widthPixels;
         displayHeight = getResources().getDisplayMetrics().heightPixels;
 
-
         super.onCreate(savedInstanceState);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -52,8 +53,11 @@ public class MainActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         //get gridlayout that info will be displayed to
-        InfoGrid = findViewById(R.id.infoDisplayGrid);
+        infoGrid = findViewById(R.id.infoDisplayGrid);
+        infoGrid.setPadding(displayWidth/16,0,0,displayWidth/16);
 
+        //get RecycleView
+        recycle = findViewById(R.id.flightCards);
 
         //on button click calls add_view method to display AlertDialog for adding flight
         //information
@@ -87,11 +91,16 @@ public class MainActivity extends AppCompatActivity {
             //make a plane object with new fnum call
             Plane newFlight = null;
             newFlight = new Plane(input_field.getText().toString());
+
+            try {       //buffer to wait for the call back
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             curFlight= newFlight;
 
-            //store data
-
-            try {
+            try {   //set current flight info for delaying
                 setInfo();
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -122,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     private void setInfo() throws JSONException {
 
         //clear past information
-        InfoGrid.removeAllViews();
+        infoGrid.removeAllViews();
 
         String[] data = curFlight.getInfo(); //grabs string[] from backend
 
@@ -136,8 +145,16 @@ public class MainActivity extends AppCompatActivity {
             //txt.setGravity(Gravity.CENTER); // Center align the text
             txt.setPadding(8, 8, 8, 8); // Add padding for better readability
 
-            InfoGrid.addView(txt);
+            infoGrid.addView(txt);
         }
+    }
+
+    /**creates cardView object to add to recycleView
+     *
+     */
+    private void cardViewCreation(){
+        CardView temp = new CardView(this);
+        temp.getCardElevation();
     }
 
 

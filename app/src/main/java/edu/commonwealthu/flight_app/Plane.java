@@ -34,7 +34,6 @@ public class Plane {
     public Plane(String fNum) {
         uriCall = "https://aerodatabox.p.rapidapi.com/flights/number/" + fNum;
         getData(); //api call
-        //parseData();
     }
 
     /**
@@ -65,8 +64,9 @@ public class Plane {
                         JSONArray arrayData = new JSONArray(responseBody); // Temp array to hold data
                         flightData = arrayData.getJSONObject(0); // Move data to JSONObject for parsing
                         System.out.println(arrayData.toString(4)); // Pretty print JSON array
+                        Log.d("TAG", "onResponse: Data recieved and stored in JSON Obj");
+                        parseData();    //parse data upon successful response
                     } catch (JSONException e) {
-                        //noinspection CallToPrintStackTrace
                         e.printStackTrace();
                     }
                 } else {
@@ -83,12 +83,18 @@ public class Plane {
      *       to prevent having too many variables of parsed data
      */
     private void parseData() throws JSONException {
-        fNum = flightData     .getJSONObject("number");
-        gcd  = flightData     .getJSONObject("greatCircleDistance");
-        aircraft = flightData .getJSONObject("aircraft");
-        airline = flightData  .getJSONObject("airline");
-        arrival = flightData  .getJSONObject("arrival");
+        Log.d("TAG", "parseData: INITIATE PARSE");
+        //fNum    = flightData     .getJSONObject("number");
+        gcd       = flightData.getJSONObject("greatCircleDistance");
+        Log.d("TAG", "parseData: GCD");
+        aircraft  = flightData.getJSONObject("aircraft");
+        Log.d("TAG", "parseData: Aircraft");
+        airline   = flightData.getJSONObject("airline");
+        Log.d("TAG", "parseData: AIRLINE");
+        arrival   = flightData.getJSONObject("arrival");
+        Log.d("TAG", "parseData: Arrival");
         departure = flightData.getJSONObject("departure");
+        Log.d("TAG", "parseData: Departure received.");
     }
 
     /**
@@ -107,7 +113,6 @@ public class Plane {
         try {
             Log.d("TAG", "getInfo: Starting");
             if (flightData != null) {
-                //parse data
                 Log.d("TAG", "getInfo: initialing info grab");
                 Log.d("TAG", "getInfo: depature = " +  departure.toString());
                 JSONObject depAirport;  //departure airport name
