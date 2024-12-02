@@ -10,20 +10,20 @@ import org.json.JSONObject;
 import okhttp3.*;
 
 import java.io.IOException;
-
+import java.util.ArrayList;
 
 
 public class Plane {
     private static String uriCall;     //call for api has request search appended on the end
     private JSONObject flightData;      // store Data from API call here
 
-    //each JSONObject from api call
-    private JSONObject fNum;            // flight number
-    private JSONObject gcd;             // great circle distance (shortest path for plane flight)
-    private JSONObject aircraft;        // aircraft model
-    private JSONObject airline;         // airline data
-    private JSONObject arrival;         // arrival data
-    private JSONObject departure;       // departure data
+    //each JSONObjects from api call to simplify searching for data
+    private String fNum;             // flight number
+    private JSONObject gcd;          // great circle distance (shortest path for plane flight)
+    private JSONObject aircraft;     // aircraft model
+    private JSONObject airline;      // airline data
+    private JSONObject arrival;      // arrival data
+    private JSONObject departure;    // departure data
 
     private static final OkHttpClient client = new OkHttpClient();
 
@@ -84,7 +84,7 @@ public class Plane {
      */
     private void parseData() throws JSONException {
         Log.d("TAG", "parseData: INITIATE PARSE");
-        //fNum    = flightData     .getJSONObject("number");
+        fNum    = flightData     .getString("number");
         gcd       = flightData.getJSONObject("greatCircleDistance");
         Log.d("TAG", "parseData: GCD");
         aircraft  = flightData.getJSONObject("aircraft");
@@ -105,53 +105,47 @@ public class Plane {
      *  arrival time
      *
      *
-     * @return array of information
+     * @return ArrayList<String> of information
      */
-    public String[] getInfo() throws JSONException {
-        String[] data = new String[4];
+    public ArrayList<String> getInfo() throws JSONException {
+        ArrayList<String> data = new ArrayList<String>();
 
         try {
             Log.d("TAG", "getInfo: Starting");
             if (flightData != null) {
-                Log.d("TAG", "getInfo: initialing info grab");
-                Log.d("TAG", "getInfo: depature = " +  departure.toString());
+                String fNum = flightData.getString("number");
+                data.add(fNum);
+
                 JSONObject depAirport;  //departure airport name
                 depAirport = departure.getJSONObject("airport");
-                data[0] = depAirport.getString("name");
-                Log.d("TAG", "getInfo: depAirport fail");
+                data.add(depAirport.getString("name"));
 
                 JSONObject depTime;     //departure time
                 depTime = departure.getJSONObject("scheduledTime");
-                data[1] = depTime.getString("local");
-                Log.d("TAG", "getInfo: depTime fail");
-
+                data.add(depTime.getString("local"));
 
                 JSONObject arrAirport; //arrival airport
                 arrAirport = arrival.getJSONObject("airport");
-                data[2] = arrAirport.getString("name");
-                Log.d("TAG", "getInfo: arrAirport");
+                data.add(arrAirport.getString("name"));
 
                 JSONObject arrTime;     //arrival time
                 arrTime = arrival.getJSONObject("scheduledTime");
-                data[3] = arrTime.getString("local");
-                Log.d("TAG", "getInfo: arrTime fail");
+                data.add(arrTime.getString("local"));
 
             } else { //if can't find data return defaults
-                System.out.println("default can't parse !!");
-                data[0] = "Unknown Departure Airport";
-                data[1] = "00:00";
-                data[2] = "Unknown Arrival Airport";
-                data[3] = "00:00";
-                Log.d("TAG", "getInfo: else fail");
+                data.clear(); //if partially fills clears for defaults
+                data.add("Unknown Departure Airport");
+                data.add("00:00");
+                data.add("Unknown Arrival Airport");
+                data.add("00:00");
             }
         } catch (JSONException e) {
             //return defaults
-            Log.d("TAG", "getInfo catch: ");
-            data[0] = "Unknown Departure Airport";
-            data[1] = "00:00";
-            data[2] = "Unknown Arrival Airport";
-            data[3] = "00:00";
-            Log.d("TAG", "getInfo: Catch failed");
+            data.clear();
+            data.add("Unknown Departure Airport");
+            data.add("00:00");
+            data.add("Unknown Arrival Airport");
+            data.add("00:00");
         }
         return data;
     }

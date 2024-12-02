@@ -26,6 +26,8 @@ import android.widget.TextView;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.addflight).setOnClickListener(view -> {
             try {
                 add_flight(view);
+
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -87,13 +90,21 @@ public class MainActivity extends AppCompatActivity {
         EditText input_field = add_flight_view.findViewById(R.id.input_field);
         Button confirm = add_flight_view.findViewById(R.id.confirm_button);
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(add_flight_view);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
         confirm.setOnClickListener(v -> { // on confirm button click
             //make a plane object with new fnum call
             Plane newFlight = null;
             newFlight = new Plane(input_field.getText().toString());
 
+
+
             try {       //buffer to wait for the call back
                 Thread.sleep(2000);
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -102,19 +113,12 @@ public class MainActivity extends AppCompatActivity {
 
             try {   //set current flight info for delaying
                 setInfo();
+
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
+            dialog.dismiss();
         });
-
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setView(add_flight_view);
-
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
 
         // Set the dimensions of the dialog programmatically
         Window window = dialog.getWindow();
@@ -133,11 +137,17 @@ public class MainActivity extends AppCompatActivity {
         //clear past information
         infoGrid.removeAllViews();
 
-        String[] data = curFlight.getInfo(); //grabs string[] from backend
+        ArrayList<String> data = curFlight.getInfo(); //grabs ArrayList<String>
+        // from backend
 
-        for (int i = 0; i < 4; i++) {
+        //displays flight number in header
+        TextView header_fnum = findViewById(R.id.header_fNum);
+        header_fnum.setText(data.get(0));
+
+        //iterates starting a 1 to avoid Flight number
+        for (int i = 1; i < data.size(); i++) {
             TextView txt = new TextView(this);
-            txt.setText(data[i]);
+            txt.setText(data.get(i));
             txt.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT

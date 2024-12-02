@@ -54,7 +54,7 @@
                     android:background="@drawable/travel_line"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/header_text" />
+                    app:layout_constraintTop_toBottomOf="@id/header_fNum" />
 
                 <View
                     android:layout_width="20dp"
@@ -75,7 +75,7 @@
                     app:layout_constraintTop_toTopOf="@+id/view" />
 
                 <TextView
-                    android:id="@+id/header_text"
+                    android:id="@+id/header_fNum"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
