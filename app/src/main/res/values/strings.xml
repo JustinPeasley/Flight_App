@@ -1,13 +1,14 @@
 <resources>
-    <string name="app_name">Flight_App</string>
+    <string name="app_name">Flight_watch</string>
     <string name="action_settings">Settings</string>
-
-    <string name="home_header">Noto Sans</string>
+    <string name="home_header">Flight Number</string>
 
     <!-- button descriptions -->
     <string name="search">Search</string>
-
-    <!-- add flight dialog box -->
     <string name="add_flight_header">Add Flight</string>
+
+    <!-- placeholder values (can act as defaults) -->
+    <string name="temp_icac">...</string>
+    <string name="temp_date">1-1-2024</string>
 
 </resources>

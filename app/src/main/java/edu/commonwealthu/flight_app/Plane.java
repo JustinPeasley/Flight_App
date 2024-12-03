@@ -12,13 +12,20 @@ import okhttp3.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
-
+/**
+ * Back end class to conduct api calls to AeroBoxAPI
+ * @author Justin Peasley
+ *
+ * Note some airports JSON string may result in missprints on app not handled
+ * submitted a bug report for following:
+ *  ex.had a terminal output be "erminal3 instead of just 3 (copenhagen airport)
+ */
 public class Plane {
     private static String uriCall;     //call for api has request search appended on the end
     private JSONObject flightData;      // store Data from API call here
 
     //each JSONObjects from api call to simplify searching for data
-    private String fNum;             // flight number
+    private String     fNum;             // flight number
     private JSONObject gcd;          // great circle distance (shortest path for plane flight)
     private JSONObject aircraft;     // aircraft model
     private JSONObject airline;      // airline data
@@ -86,15 +93,10 @@ public class Plane {
         Log.d("TAG", "parseData: INITIATE PARSE");
         fNum    = flightData     .getString("number");
         gcd       = flightData.getJSONObject("greatCircleDistance");
-        Log.d("TAG", "parseData: GCD");
         aircraft  = flightData.getJSONObject("aircraft");
-        Log.d("TAG", "parseData: Aircraft");
         airline   = flightData.getJSONObject("airline");
-        Log.d("TAG", "parseData: AIRLINE");
         arrival   = flightData.getJSONObject("arrival");
-        Log.d("TAG", "parseData: Arrival");
         departure = flightData.getJSONObject("departure");
-        Log.d("TAG", "parseData: Departure received.");
     }
 
     /**
@@ -113,27 +115,32 @@ public class Plane {
         try {
             Log.d("TAG", "getInfo: Starting");
             if (flightData != null) {
-                String fNum = flightData.getString("number");
-                data.add(fNum);
+                //get relevant JSONObjects parsed for use
+                JSONObject depAirport = departure.getJSONObject("airport");
+                JSONObject arrAirport = arrival.getJSONObject("airport");
+                JSONObject depTime = departure.getJSONObject("scheduledTime");
+                JSONObject arrTime = arrival.getJSONObject("scheduledTime");
 
-                JSONObject depAirport;  //departure airport name
-                depAirport = departure.getJSONObject("airport");
-                data.add(depAirport.getString("name"));
+                //local time response is split into two outputs (date , time
+                String Departure_time = depTime.getString("local");
+                String Arrival_time   = arrTime.getString("local");
 
-                JSONObject depTime;     //departure time
-                depTime = departure.getJSONObject("scheduledTime");
-                data.add(depTime.getString("local"));
+                //note adds in alternation for proper printout in gridview
+                data.add(flightData.getString("number"));
+                data.add(depAirport.getString("countryCode"));
+                data.add(arrAirport.getString("countryCode"));
+                data.add(depAirport.getString("municipalityName"));
+                data.add(arrAirport.getString("municipalityName"));
+                data.add("Terminal: " + departure.getString("terminal"));
+                data.add("Terminal: " + arrival.getString("terminal"));
+                data.add(Departure_time.substring(0,9));            //date
+                data.add(Arrival_time.substring(0,9));              //date
+                data.add(Departure_time.substring(10));   //local time
+                data.add(Arrival_time.substring(10));     //local time
 
-                JSONObject arrAirport; //arrival airport
-                arrAirport = arrival.getJSONObject("airport");
-                data.add(arrAirport.getString("name"));
-
-                JSONObject arrTime;     //arrival time
-                arrTime = arrival.getJSONObject("scheduledTime");
-                data.add(arrTime.getString("local"));
-
-            } else { //if can't find data return defaults
-                data.clear(); //if partially fills clears for defaults
+            } else {          //if can't find data return defaults + clear for default
+                data.clear();
+                data.add("");
                 data.add("Unknown Departure Airport");
                 data.add("00:00");
                 data.add("Unknown Arrival Airport");
@@ -142,6 +149,7 @@ public class Plane {
         } catch (JSONException e) {
             //return defaults
             data.clear();
+            data.add("");
             data.add("Unknown Departure Airport");
             data.add("00:00");
             data.add("Unknown Arrival Airport");

@@ -13,6 +13,7 @@ import android.content.pm.ActivityInfo;
 
 import edu.commonwealthu.flight_app.databinding.ActivityMainBinding;
 
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,12 +32,13 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
     private int displayWidth;
     private int displayHeight;
-    private GridLayout infoGrid;
-    private RecyclerView recycle;
+    private GridLayout infoGrid;                //displays current flight data
+    private RecyclerView recycle;               //recycle view that fills with flights
+    private GridLayout.LayoutParams params;     //used to dynamically space gridlayout
 
+    private int rows;                           //row count for gridview
     private Plane curFlight;
 
     @SuppressLint("SourceLockedOrientationActivity")
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        edu.commonwealthu.flight_app.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         //Lock screen orientation
@@ -56,7 +58,10 @@ public class MainActivity extends AppCompatActivity {
 
         //get gridlayout that info will be displayed to
         infoGrid = findViewById(R.id.infoDisplayGrid);
-        infoGrid.setPadding(displayWidth/16,0,0,displayWidth/16);
+        infoGrid.setRowCount(3);
+        infoGrid.setPadding((displayWidth/3)- displayWidth/16,0,0,displayWidth/20);
+        params = new GridLayout.LayoutParams();     //used for dynamically spacing grid
+        params.width = displayWidth / infoGrid.getColumnCount();
 
         //get RecycleView
         recycle = findViewById(R.id.flightCards);
@@ -133,12 +138,13 @@ public class MainActivity extends AppCompatActivity {
      * Display information of current displayed flight
      */
     private void setInfo() throws JSONException {
-
-        //clear past information
-        infoGrid.removeAllViews();
-
         ArrayList<String> data = curFlight.getInfo(); //grabs ArrayList<String>
         // from backend
+
+        //clear past information and sets up for new info
+        // dynamically set size here in case backend is changed to support more info
+        infoGrid.removeAllViews();
+        infoGrid.setRowCount(data.size()/2);
 
         //displays flight number in header
         TextView header_fnum = findViewById(R.id.header_fNum);
@@ -147,13 +153,16 @@ public class MainActivity extends AppCompatActivity {
         //iterates starting a 1 to avoid Flight number
         for (int i = 1; i < data.size(); i++) {
             TextView txt = new TextView(this);
+
+            txt.setGravity(Gravity.CENTER);
             txt.setText(data.get(i));
+            txt.setLayoutParams(params);
             txt.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             )); // Define layout params for TextView
             //txt.setGravity(Gravity.CENTER); // Center align the text
-            txt.setPadding(8, 8, 8, 8); // Add padding for better readability
+            txt.setPadding(8, 8, displayWidth/8, 8); // Add padding for better readability
 
             infoGrid.addView(txt);
         }

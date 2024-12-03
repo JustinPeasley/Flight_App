@@ -47,7 +47,7 @@
 
                 <!-- graphic design of arrival -> destination -->
                 <View
-                    android:id="@+id/view"
+                    android:id="@+id/bar"
                     android:layout_width="250dp"
                     android:layout_height="10dp"
                     android:layout_marginTop="10dp"
@@ -62,8 +62,8 @@
                     android:layout_marginTop="-5dp"
                     android:layout_marginEnd="5dp"
                     android:background="@drawable/circle"
-                    app:layout_constraintEnd_toStartOf="@+id/view"
-                    app:layout_constraintTop_toTopOf="@+id/view" />
+                    app:layout_constraintEnd_toStartOf="@+id/bar"
+                    app:layout_constraintTop_toTopOf="@+id/bar" />
 
                 <View
                     android:layout_width="20dp"
@@ -71,8 +71,8 @@
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="-5dp"
                     android:background="@drawable/circle"
-                    app:layout_constraintStart_toEndOf="@+id/view"
-                    app:layout_constraintTop_toTopOf="@+id/view" />
+                    app:layout_constraintStart_toEndOf="@+id/bar"
+                    app:layout_constraintTop_toTopOf="@+id/bar" />
 
                 <TextView
                     android:id="@+id/header_fNum"
@@ -92,11 +92,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="10dp"
                     android:columnCount="2"
-                    android:rowCount="3"
+                    android:rowCount="4"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/bar"
                     app:layout_constraintVertical_chainStyle="packed"
                     tools:ignore="MissingConstraints">
 
