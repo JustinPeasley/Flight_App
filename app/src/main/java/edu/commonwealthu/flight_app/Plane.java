@@ -10,15 +10,17 @@ import org.json.JSONObject;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Back end class to conduct api calls to AeroBoxAPI
  * @author Justin Peasley
  *
- * Note some airports JSON string may result in missprints on app not handled
- * submitted a bug report for following:
+ * Note some airports JSON string may result in missprints on app not handled currently
  *  ex.had a terminal output be "erminal3 instead of just 3 (copenhagen airport)
+ *      seems to not be an issue anymore but still noting incase of furthur issues
  */
 public class Plane {
     private static String uriCall;     //call for api has request search appended on the end
@@ -63,6 +65,12 @@ public class Plane {
                 System.err.println("API call failed");
             }
 
+            /**
+             * when receive response back from api save response and parse data
+             * @param call         current api call
+             * @param response     the response from the api
+             * @throws IOException Exception for error handling
+             */
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful() && response.body() != null) {
@@ -101,11 +109,10 @@ public class Plane {
 
     /**
      * pass flight data in order below
-     *  departure airport name
-     *  departure time
-     *  arrival airport name
-     *  arrival time
-     *
+     *  departure country, arrival country
+     *  departure city, arrival city
+     *  departure time, arrival time
+     *  departure date, arrival date note: could be different depending on flight times
      *
      * @return ArrayList<String> of information
      */
@@ -125,28 +132,29 @@ public class Plane {
                 String Departure_time = depTime.getString("local");
                 String Arrival_time   = arrTime.getString("local");
 
-                //note adds in alternation for proper printout in gridview
-                data.add(flightData.getString("number"));
-                data.add(depAirport.getString("countryCode"));
-                data.add(arrAirport.getString("countryCode"));
-                data.add(depAirport.getString("municipalityName"));
-                data.add(arrAirport.getString("municipalityName"));
-                data.add("Terminal: " + departure.getString("terminal"));
-                data.add("Terminal: " + arrival.getString("terminal"));
-                data.add(Departure_time.substring(0,9));            //date
-                data.add(Arrival_time.substring(0,9));              //date
-                data.add(Departure_time.substring(10));   //local time
-                data.add(Arrival_time.substring(10));     //local time
+                ArrayList<String> tempData = new ArrayList<>();
 
-            } else {          //if can't find data return defaults + clear for default
-                data.clear();
+                //note adds in alternation for proper printout in gridview
+                tempData.add(flightData.getString("number"));
+                tempData.add(depAirport.getString("countryCode"));
+                tempData.add(arrAirport.getString("countryCode"));
+                tempData.add(depAirport.getString("municipalityName"));
+                tempData.add(arrAirport.getString("municipalityName"));
+                tempData.add("Terminal: " + departure.getString("terminal"));
+                tempData.add("Terminal: " + arrival.getString("terminal"));
+                tempData.add(depAirport.getString("iata"));        //short form city name
+                tempData.add(arrAirport.getString("iata"));        //short form city name
+                data.addAll()
+
+            } else {
+                data.clear(); //incase partially stored data
                 data.add("");
                 data.add("Unknown Departure Airport");
                 data.add("00:00");
                 data.add("Unknown Arrival Airport");
                 data.add("00:00");
             }
-        } catch (JSONException e) {
+        } catch (JSONException e) { //if can't find data return defaults + clear for default
             //return defaults
             data.clear();
             data.add("");

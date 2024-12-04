@@ -11,7 +11,8 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
- *
+ *  if database is not on this machine yet sets it up with already exist doesn't recreate
+ *  sets up database and handles all database creation and accessing of database
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private ArrayList<String> data;
@@ -27,12 +28,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ARRIVAL_DATE      = "ARRIVAL_DATE";
     public static final String COLUMN_DEPARTURE_TIME    = "DEPARTURE_TIME";
     public static final String COLUMN_ARRIVAL_TIME      = "ARRIVAL_TIME";
+    public static final String COLUMN_DEPARTURE_IATA    = "DEPARTURE_IATA";
+    public static final String COLUMN_ARRIVAL_IATA      = "ARRIVAL_IATA";
 
+    /**
+     * constructor
+     * takes in the current context and ArrayList of data
+     * @param context the current context of the application
+     * @param data    ArrayList of data to store
+     */
     public DatabaseHelper(Context context, ArrayList<String> data) {
         super(context, "Flights.db", null, 1);
         this.data=data; //ArrayList that is used to transfer data
     }
 
+    /**
+     * creates the table with the following columns with flight number as the key
+     * @param db the database being created
+     */
+    @SuppressLint("SQLiteString")
     @Override
     public void onCreate(SQLiteDatabase db) {
         //table creation use variables for easy modification
@@ -49,7 +63,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                               COLUMN_DEPARTURE_DATE    + " STRING, " +
                               COLUMN_ARRIVAL_DATE      + " STRING, " +
                               COLUMN_DEPARTURE_TIME    + " STRING, " +
-                              COLUMN_ARRIVAL_TIME      + " STRING" +
+                              COLUMN_ARRIVAL_TIME      + " STRING, " +
+                              COLUMN_ARRIVAL_IATA      + " STRING, " +
+                              COLUMN_DEPARTURE_IATA    + " STRING"   +
                         ") ";
 
         db.execSQL(createTableStatement);
@@ -79,20 +95,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        int i = 0;    //for loop used to save typing each index out
-            while (i < data.size() - 1) {
-                cv.put(COLUMN_FLIGHT_NUMBER, data.get(i++));
-                cv.put(COLUMN_DEPARTURE_CTRY, data.get(i++));
-                cv.put(COLUMN_ARRIVAL_CTRY, data.get(i++));
-                cv.put(COLUMN_DEPARTURE_AIRPORT, data.get(i++));
-                cv.put(COLUMN_ARRIVAL_AIRPORT, data.get(i++));
-                cv.put(COLUMN_DEPARTURE_TERM, data.get(i++));
-                cv.put(COLUMN_ARRIVAL_TERM, data.get(i++));;
-                cv.put(COLUMN_DEPARTURE_DATE, data.get(i++));
-                cv.put(COLUMN_ARRIVAL_DATE, data.get(i++));
-                cv.put(COLUMN_DEPARTURE_TIME, data.get(i++));
-                cv.put(COLUMN_ARRIVAL_TIME, data.get(i++));
-            }
+        int i = 0;    //iterate i for each data grab
+
+        cv.put(COLUMN_FLIGHT_NUMBER,     data.get(i++));
+        cv.put(COLUMN_DEPARTURE_CTRY,    data.get(i++));
+        cv.put(COLUMN_ARRIVAL_CTRY,      data.get(i++));
+        cv.put(COLUMN_DEPARTURE_AIRPORT, data.get(i++));
+        cv.put(COLUMN_ARRIVAL_AIRPORT,   data.get(i++));
+        cv.put(COLUMN_DEPARTURE_TERM,    data.get(i++));
+        cv.put(COLUMN_ARRIVAL_TERM,      data.get(i++));
+        cv.put(COLUMN_DEPARTURE_IATA,    data.get(i++));
+        cv.put(COLUMN_ARRIVAL_IATA,      data.get(i++));
+        cv.put(COLUMN_DEPARTURE_DATE,    data.get(i++));
+        cv.put(COLUMN_ARRIVAL_DATE,      data.get(i++));
+        cv.put(COLUMN_DEPARTURE_TIME,    data.get(i++));
+        cv.put(COLUMN_ARRIVAL_TIME,      data.get(i++));
+
 
             long result = db.insert("FLIGHT_TABLE", null, cv);
             db.close();
@@ -107,7 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * retrieve data from database
-     * @return
+     * @return 2d array of the whole table to parse for card view's
      */
     public String[][] returnData()
     {
@@ -130,6 +148,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close(); // Always close the cursor to free resources
         return tableData;
     }
-
-
 }

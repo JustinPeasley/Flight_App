@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         //information
         findViewById(R.id.addflight).setOnClickListener(view -> {
             try {
-                add_flight(view);
+                add_flight();       //NOTE CHANGED MIGHT BREAK
 
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -112,9 +112,8 @@ public class MainActivity extends AppCompatActivity {
      *  change curFlight to this new flight
      *  then will call setInfo() to display it
      *
-     * @param view
      */
-    private void add_flight(View view) throws JSONException {
+    private void add_flight() throws JSONException {
 
         //inflate window with ui to take in input
         LayoutInflater inflater = getLayoutInflater();
@@ -156,12 +155,14 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
 
-            try {   //set current flight info for delaying
+            try {   //set current flight info for display
                 setInfo();
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
             dialog.dismiss();
+
+            cardViewCreation();
         });
 
         // Set the dimensions of the dialog programmatically
@@ -191,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
 
         //iterates starting a 1 to avoid Flight number
         for (int i = 1; i < data.size(); i++) {
+            if(i == 5) i=i+2;
             TextView txt = new TextView(this);
 
             txt.setGravity(Gravity.CENTER);
@@ -207,22 +209,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**creates cardView object to add to recycleView
-     *
+    /**
+     *  creates cardView object to add to recycleView
      */
     private void cardViewCreation(){
 
+        items = new ArrayList<>(); //data to send to reycle view adapter to read
+
         try {
             DatabaseHelper db = new DatabaseHelper(MainActivity.this, curFlight.getInfo());
+            String[][] parasable = db.returnData();
+            for (int i = 0; i < parasable.length; i++) {
+                for (int j = 0; j < parasable[0].length; j++) {
+                    System.out.println(parasable[i][j]);
+
+                }
+            }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
 
-        CardView temp = new CardView(this);
-        temp.getCardElevation();
+        //CardView temp = new CardView(this);
+        //temp.getCardElevation();
+
+        //place stuff from
     }
 
 
+    /**
+     * inflates the main menu of the application
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -230,6 +248,11 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * handle action bar clicks
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -241,9 +264,6 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
-
-
 }
