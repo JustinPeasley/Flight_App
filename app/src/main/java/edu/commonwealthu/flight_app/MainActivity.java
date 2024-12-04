@@ -7,12 +7,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.navigation.ui.AppBarConfiguration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.ActivityInfo;
 
 import edu.commonwealthu.flight_app.databinding.ActivityMainBinding;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -40,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
     private int rows;                           //row count for gridview
     private Plane curFlight;
+
+    private Adapter adapter;
+    ArrayList<String> items;
 
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         //get RecycleView
         recycle = findViewById(R.id.flightCards);
+        populate_recycle();
 
         //on button click calls add_view method to display AlertDialog for adding flight
         //information
@@ -76,6 +83,27 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    /**
+     * populates the recycle view of the app and gathers data from the database to display
+     */
+    private void populate_recycle()
+    {
+        items = new ArrayList<>();
+        items.add("first card");
+        items.add("first card");
+        items.add("2");
+        items.add("second card");
+        items.add("second card");
+        items.add("3");
+        items.add("third card");
+        items.add("third card");
+        items.add("4");
+
+        recycle.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new Adapter(this, items);
+        recycle.setAdapter(adapter);
     }
 
     /** Allow for user to add a flight
@@ -106,19 +134,30 @@ public class MainActivity extends AppCompatActivity {
             newFlight = new Plane(input_field.getText().toString());
 
 
-
-            try {       //buffer to wait for the call back
+            try {    //buffer to wait for the call back
                 Thread.sleep(2000);
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            curFlight= newFlight;
+            curFlight= newFlight; //update the current flight to be displayed
+
+            //add flight to the database
+            try {
+                DatabaseHelper databaseHelper =
+                        new DatabaseHelper(MainActivity.this, curFlight.getInfo());
+                boolean b = databaseHelper.addFlightData();
+                Log.d("TAG", " do i work?: " + b);
+                Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
+            } catch (JSONException e) {
+                Toast.makeText(MainActivity.this, "error adding flight",
+                        Toast.LENGTH_SHORT).show();
+                throw new RuntimeException(e);
+            }
 
             try {   //set current flight info for delaying
                 setInfo();
-
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
@@ -172,6 +211,13 @@ public class MainActivity extends AppCompatActivity {
      *
      */
     private void cardViewCreation(){
+
+        try {
+            DatabaseHelper db = new DatabaseHelper(MainActivity.this, curFlight.getInfo());
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
         CardView temp = new CardView(this);
         temp.getCardElevation();
     }
