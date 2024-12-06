@@ -3,31 +3,33 @@ package edu.commonwealthu.flight_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.motion.widget.MotionLayout;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class SplashScreen extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.splashscreen);
 
         MotionLayout motionLayout = findViewById(R.id.splashLayout);
-        motionLayout.transitionToEnd();
+        if (motionLayout != null) {
+            motionLayout.transitionToEnd();
+        } else {
+            Log.e("SplashScreen", "MotionLayout reference is null!");
+        }
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 // Navigate to MainActivity after delay
-                Intent intent = new Intent(SplashScreen.this, MainActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(SplashScreen.this, MainActivity.class));
                 finish(); // Finish SplashScreen so it doesn't come back in the stack
             }
-        }, 3000); // Show splash for 3 seconds
+        }, 2000); // Show splash for 3 seconds
     }
 }

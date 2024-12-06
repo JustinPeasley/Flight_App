@@ -14,28 +14,33 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Flight_App"
         tools:targetApi="31">
+
+        <!-- SplashScreen should be the initial activity -->
         <activity
             android:name=".SplashScreen"
             android:exported="true"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.main" />
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- lock screen orientation -->
+
+        <!-- MainActivity should be the target after splash screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Flight_App"
             tools:ignore="LockedOrientationActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <!-- Removed MAIN intent filter -->
         </activity>
+
+        <!-- Optional: Add the second splash screen activity if you need it -->
+        <!-- Remove this block if not using SplashScreen2 -->
+        <activity
+            android:name=".SplashScreen2"
+            android:exported="false" />
     </application>
 
 </manifest>
