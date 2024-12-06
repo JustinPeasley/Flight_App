@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="Theme.FlightApp.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/off_white</item>
+    </style>
+
+
     <style name="CustomButtonStyle" parent="ThemeOverlay.AppCompat">
         <item name="colorAccent">@color/l_purple</item>
         <item name="android:textColor">@color/black</item>
