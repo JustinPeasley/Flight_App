@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- used for display in the current flight display -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:left="0dp"

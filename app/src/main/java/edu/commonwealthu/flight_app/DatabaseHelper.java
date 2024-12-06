@@ -11,8 +11,8 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
+ *  sets up Flight database and handles all database creation and accessing of database
  *  if database is not on this machine yet sets it up with already exist doesn't recreate
- *  sets up database and handles all database creation and accessing of database
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private ArrayList<String> data;
@@ -101,11 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public boolean addFlightData()
     {
-
         if (data.size() == 5) return false; //if default values
-        Log.d("TAG", "addFlightData: Data<String>.size() not right size");
-
-        Log.d("TAG", "addFlightData: cv.put data");
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -127,12 +123,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
             long result = db.insert("FLIGHT_TABLE", null, cv);
-        Log.d("TAG", "addFlightData: db insert? " + result);
             db.close();
 
         // Log the result of the insert
         if (result == -1) {
-            Log.e("TAG", "Insert failed at index " + (i-1));
             return false;  // Return false if insertion fails
         }
         return true;
@@ -140,17 +134,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * retrieve data from database
+     * gets entire dataset from database
      * @return 2d array of the whole table to parse for card view's
      */
     public String[][] returnData()
     {
+        //build query string
         SQLiteDatabase db = this.getReadableDatabase();
         @SuppressLint("Recycle") Cursor cursor =
                 db.rawQuery("SELECT * FROM " + FLIGHT_TABLE, null);
         String[][] tableData = new String[cursor.getCount()][cursor.getColumnCount()];
 
-        int rowIndex=0;
+        int rowIndex=0; //set to first position of database
 
+        //get entire database dataset
         if (cursor.moveToFirst()) {
             do {
                 for (int colIndex = 0; colIndex < cursor.getColumnCount(); colIndex++) {
@@ -159,44 +156,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 rowIndex++;
             } while (cursor.moveToNext());
         }
-        cursor.close(); // Always close the cursor to free resources
-        return tableData;
+        cursor.close();   //Always close the cursor to free resources
+        return tableData; //return entire database
     }
 
+    /**
+     * queries for a row based on Flight Number provided (used for CardView clicks)
+     * @param flightNumber Flight number to search for in database
+     * @return Row data
+     */
     public Cursor getFlightDataByFlightNumber(String flightNumber){
-        Log.d("TAG", "getFlightDataByFlightNumber: flightnum "+ flightNumber);
         SQLiteDatabase db = this.getReadableDatabase();
         String sql =
                 "SELECT  * FROM " + FLIGHT_TABLE + " WHERE " + COLUMN_FLIGHT_NUMBER +
                         " = ?";
-        Cursor cursor = db.rawQuery(sql, new String[]{flightNumber});
 
-        /*
-        // Use parameterized queries to avoid SQL injection
-        Cursor cursor =  db.query(
-                FLIGHT_TABLE,                    // Table name
-                null,                         // Columns to fetch (null fetches all columns)
-                COLUMN_FLIGHT_NUMBER+" = ?",          // WHERE clause
-                new String[]{flightNumber},   // WHERE arguments
-                null,                         // GROUP BY
-                null,                         // HAVING
-                null                          // ORDER BY
-        );
-         */
-
-        if (cursor != null && cursor.moveToFirst()) {
-            Log.d("DB_METHOD", "Query successful, cursor returned with count: " + cursor.getCount());
-        } else {
-            Log.e("DB_METHOD", "Query returned a null cursor.");
-        }
-
-        Log.d("DB_METHOD", "getFlightDataByFlightNumber: " + cursor.getString(0));
-        return cursor;
+        return db.rawQuery(sql, new String[]{flightNumber});
     }
 
     /**
      * this method will delete the current selected flight
-     * @param flightNumber
+     * @param flightNumber flight number used to find row to delete
      */
     @SuppressLint("NotifyDataSetChanged")
     public void deleteFlightData(String flightNumber, Adapter adapter)
@@ -219,7 +199,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * returns the closest flight date to the current day
-     * @return
+     * Currently not in use implementation at a later date
+     * @return current flight date
      */
     public Cursor getClosestFlight() {
         SQLiteDatabase db = this.getReadableDatabase();

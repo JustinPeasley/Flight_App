@@ -15,7 +15,6 @@ import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_TIME;
 import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_FLIGHT_NUMBER;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import android.os.Bundle;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -44,7 +42,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -52,9 +49,14 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
+/**
+ * Flight_watch app for tracking flights through taking a Flight Number as input
+ * Uses AeroBoxAPI to get all the data
+ * app has use of a SQLite local database to store searched flights
+ * @author Justin Peasley
+ */
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
@@ -65,11 +67,18 @@ public class MainActivity extends AppCompatActivity {
     private GridLayout.LayoutParams params;     //used to dynamically space gridlayout
 
     private int rows;                           //row count for gridview
-    private Plane curFlight;
+    private Plane curFlight;                    //current selected flight for display
 
-    private Adapter adapter;
-    ArrayList<String> items;
+    private Adapter adapter;                    //Adapter for RecyclerView
+    ArrayList<String> items;                    //used to store data from database
 
+    /**
+     * Creates the main view of the screen
+     * ran on creation (when the app is made)
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}.  <b><i>Note: Otherwise it is null.</i></b>
+     */
     @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
@@ -86,29 +95,26 @@ public class MainActivity extends AppCompatActivity {
         //Lock screen orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        //get gridlayout that info will be displayed to
+        //get gridlayout that info on launch to display
         infoGrid = findViewById(R.id.infoDisplayGrid);
         infoGrid.setRowCount(3);
         infoGrid.setPadding((displayWidth/3)- displayWidth/16,0,0,displayWidth/20);
         params = new GridLayout.LayoutParams();     //used for dynamically spacing grid
         params.width = displayWidth / infoGrid.getColumnCount();
-
-        //get RecycleView
-        recycle = findViewById(R.id.flightCards);
-        cardViewCreation();
+        recycle = findViewById(R.id.flightCards);   //get recyclerview then
+        cardViewCreation();                         //create card views from database
 
         //on button click calls add_view method to display AlertDialog for adding flight
-        //information
         findViewById(R.id.addflight).setOnClickListener(view -> {
             try {
-                add_flight();       //NOTE CHANGED MIGHT BREAK
-
+                add_flight();
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        findViewById(R.id.search).setOnClickListener(view -> {
+        //when
+        findViewById(R.id.delete).setOnClickListener(view -> {
                 TextView header_fnum = findViewById(R.id.header_fNum);
                 DatabaseHelper db = new DatabaseHelper(MainActivity.this);
                 db.deleteFlightData((String) header_fnum.getText(), adapter);
@@ -128,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = getLayoutInflater();
         View add_flight_view = inflater.inflate(R.layout.add_flight_menu, null);
 
+        //get button references
         EditText input_field = add_flight_view.findViewById(R.id.input_field);
         Button confirm = add_flight_view.findViewById(R.id.confirm_button);
 
@@ -137,17 +144,15 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        ////////---------------------------------------
-
         // Inflate the loading overlay layout
         LayoutInflater overlayInflater = getLayoutInflater();
         View loadingOverlay = overlayInflater.inflate(R.layout.loading_dimmer, null);
 
-        // Find the dim background and spinner in the inflated layout
+        // Find the dim background and spinner in the inflated layout (loading display)
         View dimBackground = loadingOverlay.findViewById(R.id.dimBackground);
         ProgressBar loadingSpinner = loadingOverlay.findViewById(R.id.loadingSpinner);
 
-        // Add the overlay to the current layout (e.g., a FrameLayout or RelativeLayout)
+        // Add the overlay to the current layout
         CoordinatorLayout parentLayout = findViewById(R.id.main_screen); // Your parent layout
         parentLayout.addView(loadingOverlay);
 
@@ -155,10 +160,8 @@ public class MainActivity extends AppCompatActivity {
         dimBackground.setVisibility(View.GONE);
         loadingSpinner.setVisibility(View.GONE);
 
-
-        //---------------------------------------------
-
-        confirm.setOnClickListener(v -> { // on confirm button click
+        // on confirm button click
+        confirm.setOnClickListener(v -> {
             //make a plane object with new fnum call
             Plane newFlight = new Plane(input_field.getText().toString());
 
@@ -168,15 +171,16 @@ public class MainActivity extends AppCompatActivity {
             dimBackground.setVisibility(View.VISIBLE);
             loadingSpinner.setVisibility(View.VISIBLE);
 
+            //handler for halting code until api return (2 seconds)
             new Handler().postDelayed(() -> {
                 curFlight= newFlight; //update the current flight to be displayed
-                Log.d("TAG", "add_flight: about to store flight data!");
+
                 //add flight to the database
                 try {
                     DatabaseHelper databaseHelper =
                             new DatabaseHelper(MainActivity.this, curFlight.getInfo());
                     boolean b = databaseHelper.addFlightData();
-                    Log.d("TAG", "add_flight: done adding data");
+
                     if (b)
                         Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
 
@@ -202,7 +206,8 @@ public class MainActivity extends AppCompatActivity {
         // Set the dimensions of the dialog programmatically
         Window window = dialog.getWindow();
         if (window != null) {
-            window.setBackgroundDrawableResource(android.R.color.transparent); // Remove default dialog padding
+            // Remove default dialog padding
+            window.setBackgroundDrawableResource(android.R.color.transparent);
             window.setLayout(displayWidth/2,displayHeight/4 );
         }
         add_flight_view.post(add_flight_view::requestLayout);
@@ -210,9 +215,14 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Display information of current displayed flight
-     * Used when adding flight
+     *      * Used when adding flight
+     * @param newData data set to be parsed and displayed to screen
+     * @param backend boolean that determines if data came from backend or user input
+     *                true: handles backend data through newData
+     *                false: handles frontend data through curFlight
+     * @throws JSONException
      */
-    private void setInfo(ArrayList<String> newData, boolean backend) throws JSONException {
+    private void setInfo(ArrayList<String> newData, boolean backend) throws JSONException{
         ArrayList<String> data;
         if (!backend) {
             data = curFlight.getInfo(); //grabs ArrayList<String>
@@ -229,8 +239,8 @@ public class MainActivity extends AppCompatActivity {
         TextView header_fnum = findViewById(R.id.header_fNum);
         header_fnum.setText(data.get(0));
 
-        //iterates starting a 1 to avoid Flight number
-        for (int i = 1; i < data.size(); i++) {
+        //display current flight information
+        for (int i = 1; i < data.size(); i++) { //starts at 1 to avoid Flight number
             if(i == 7) i=i+2;
             TextView txt = new TextView(this);
 
@@ -240,39 +250,37 @@ public class MainActivity extends AppCompatActivity {
             txt.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
-            )); // Define layout params for TextView
-            //txt.setGravity(Gravity.CENTER); // Center align the text
-            txt.setPadding(8, 8, displayWidth/8, 8); // Add padding for better readability
-
+            ));
+            // Define layout params for TextView
+            txt.setPadding(8, 8, displayWidth/8, 8);
             infoGrid.addView(txt);
         }
     }
 
     /**
-     *  creates cardView object to add to recycleView
+     *  creates cardView objects to add to recycleView using recycleView adapter
      */
     @SuppressLint("Range")
     private void cardViewCreation(){
-        Log.d("TAG", "cardViewCreation: creating card");
+
         items = new ArrayList<>(); //data to send to recycle view adapter to read
 
+        //noinspection resource
         DatabaseHelper db = new DatabaseHelper(MainActivity.this);
-        String[][] parasable = db.returnData();
-        for (int i = 0; i < parasable.length; i++) {
-            Log.d("TAG", "cardViewCreation: loop data");
-                items.add(parasable[i][0]); //flight num
+        String[][] parasable = db.returnData();         //2d-array of database data
+        for (int i = 0; i < parasable.length; i++) {    //get data for each CardView
+                items.add(parasable[i][0]);  //flight num
                 items.add(parasable[i][7]); //departure iata
                 items.add(parasable[i][8]); //arrival   iata
                 items.add(parasable[i][9]); //date
         }
 
-        //if card is clicked run below
+        //if card is clicked fetch data and display in top of app
         recycle.setLayoutManager(new LinearLayoutManager(this));
         adapter = new Adapter(this, items, position ->{
             String selectedItem = items.get(position);
             int sfn = position * 4;  //cards take 4 values, need to scale for that
             String selectedFlightNumber = items.get(sfn);
-            Log.d("TAG", "cardViewCreation: " + selectedFlightNumber);
 
             // Fetch flight details from the database using the flight number
             Cursor cursor = db.getFlightDataByFlightNumber(selectedFlightNumber);
@@ -282,55 +290,36 @@ public class MainActivity extends AppCompatActivity {
 
             // Extract flight details from the cursor
             if (cursor != null && cursor.moveToFirst()) {
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_FLIGHT_NUMBER)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_CTRY)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_CTRY)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_AIRPORT)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_AIRPORT)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_TERM)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_TERM)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_IATA)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_IATA)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_DATE)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_DATE)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_TIME)));
-                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_TIME)));
-                setInfo(gatherData, true);
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_FLIGHT_NUMBER)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_CTRY)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_CTRY)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_AIRPORT)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_AIRPORT)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_TERM)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_TERM)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_IATA)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_IATA)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_DATE)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_DATE)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_DEPARTURE_TIME)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex
+                        (COLUMN_ARRIVAL_TIME)));
+                setInfo(gatherData, true);  //sets parsed data from database
             }
             if (cursor != null) cursor.close(); // Close the cursor
         });
-        recycle.setAdapter(adapter);
-    }
-
-
-    /**
-     * inflates the main menu of the application
-     * @param menu
-     * @return
-     */
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    /**
-     * handle action bar clicks
-     * @param item
-     * @return
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        recycle.setAdapter(adapter); //refreshes RecyclerView
     }
 }

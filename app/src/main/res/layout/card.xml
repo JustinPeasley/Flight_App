@@ -6,6 +6,8 @@
     android:layout_height="wrap_content"
     android:padding="25dp">
 
+    <!-- used to show a single flight in database -->
+    <!-- multiple of these used in recycle view one per flight -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,6 +34,7 @@
                     android:layout_height="match_parent"
                     android:padding="15dp">
 
+                    <!-- all data displayed on the card -->
                     <TextView
                         android:id="@+id/departure_icac"
                         android:layout_width="wrap_content"
@@ -77,6 +80,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
+
             <!-- used to store flight number (primary key for database) -->
             <TextView
                 android:layout_width="0dp"

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- line -->
+    <!-- line used for display in the current flight display-->
     <item>
         <shape android:shape="rectangle">
             <size android:height="1dp"

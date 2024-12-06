@@ -36,12 +36,5 @@
             tools:ignore="LockedOrientationActivity">
             <!-- Removed MAIN intent filter -->
         </activity>
-
-        <!-- Optional: Add the second splash screen activity if you need it -->
-        <!-- Remove this block if not using SplashScreen2 -->
-        <activity
-            android:name=".SplashScreen2"
-            android:exported="false" />
     </application>
-
 </manifest>

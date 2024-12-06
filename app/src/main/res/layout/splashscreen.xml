@@ -9,28 +9,18 @@
     android:background="@color/off_white"
     app:layoutDescription="@xml/splashscreen_scene">
 
-    <ImageView
-        android:id="@+id/imageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="TODO"
-        android:src="@drawable/aeroplane"
-        android:translationY="1000dp"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView3"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="0dp" />
-
+    <!-- display logo in api-->
     <ImageView
         android:id="@+id/imageView3"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:contentDescription="TODO"
         android:src="@drawable/globe"
         android:visibility="invisible"
         android:alpha="0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.motion.widget.MotionLayout>
