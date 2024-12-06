@@ -4,7 +4,7 @@
     <string name="home_header">Flight Number</string>
 
     <!-- button descriptions -->
-    <string name="search">Search</string>
+    <string name="minus">Remove flight</string>
     <string name="add_flight_header">Add Flight</string>
 
     <!-- placeholder values (can act as defaults) -->

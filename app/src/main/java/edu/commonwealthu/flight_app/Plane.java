@@ -105,6 +105,18 @@ public class Plane {
         airline   = flightData.getJSONObject("airline");
         arrival   = flightData.getJSONObject("arrival");
         departure = flightData.getJSONObject("departure");
+
+
+        String departureTerminal = "N/A";
+        if (departure != null && departure.has("terminal")) {
+            departureTerminal = departure.getString("terminal");
+        }
+
+        String arrivalTerminal = "N/A";
+        if (arrival != null && arrival.has("terminal")) {
+            arrivalTerminal = arrival.getString("terminal");
+        }
+
     }
 
     /**
@@ -118,15 +130,18 @@ public class Plane {
      */
     public ArrayList<String> getInfo() throws JSONException {
         ArrayList<String> data = new ArrayList<String>();
-
         try {
+            Log.d("TAG", "getInfo: ");
             Log.d("TAG", "getInfo: Starting");
+            Log.d("TAG", "getInfo: flightdata: " + flightData);
             if (flightData != null) {
                 //get relevant JSONObjects parsed for use
                 JSONObject depAirport = departure.getJSONObject("airport");
                 JSONObject arrAirport = arrival.getJSONObject("airport");
                 JSONObject depTime = departure.getJSONObject("scheduledTime");
                 JSONObject arrTime = arrival.getJSONObject("scheduledTime");
+
+                Log.d("TAG", "getInfo: setup done!");
 
                 //local time response is split into two outputs (date , time
                 String Departure_time = depTime.getString("local");
@@ -138,14 +153,33 @@ public class Plane {
                 tempData.add(flightData.getString("number"));
                 tempData.add(depAirport.getString("countryCode"));
                 tempData.add(arrAirport.getString("countryCode"));
+                Log.d("TAG", "getInfo: country code done");
                 tempData.add(depAirport.getString("municipalityName"));
                 tempData.add(arrAirport.getString("municipalityName"));
-                tempData.add("Terminal: " + departure.getString("terminal"));
-                tempData.add("Terminal: " + arrival.getString("terminal"));
+                Log.d("TAG", "getInfo: municipality done");
+
+                //handling instances where terminal not present
+                if (departure.has("terminal"))
+                    tempData.add("Terminal: " + departure.getString("terminal"));
+                else if (departure.has("checkInDesk"))
+                    tempData.add("desk: " + departure.getString("checkInDesk"));
+                else tempData.add("No terminal");
+                if (arrival.has("terminal"))
+                    tempData.add("Terminal: " + arrival.getString("terminal"));
+                else if (departure.has("checkInDesk"))
+                    tempData.add("desk: " + departure.getString("checkInDesk"));
+                else tempData.add("No terminal");
+
+                Log.d("TAG", "getInfo: terminal done");
                 tempData.add(depAirport.getString("iata"));        //short form city name
                 tempData.add(arrAirport.getString("iata"));        //short form city name
-                data.addAll()
-
+                Log.d("TAG", "getInfo: iata done");
+                data.addAll(tempData);
+                data.add(Departure_time.substring(0,10));            //date
+                data.add(Arrival_time.substring(0,10));              //date
+                data.add(Departure_time.substring(11));    //local time
+                data.add(Arrival_time.substring(11));      //local time
+                Log.d("TAG", "Plane-getInfo: successful grabbed data");
             } else {
                 data.clear(); //incase partially stored data
                 data.add("");
@@ -153,9 +187,11 @@ public class Plane {
                 data.add("00:00");
                 data.add("Unknown Arrival Airport");
                 data.add("00:00");
+                Log.d("TAG", "Plane-getInfo: failed grabbing data from api");
             }
         } catch (JSONException e) { //if can't find data return defaults + clear for default
             //return defaults
+            Log.d("TAG", "Plane-getInfo JSONExcept: failed grabbing data from api");
             data.clear();
             data.add("");
             data.add("Unknown Departure Airport");

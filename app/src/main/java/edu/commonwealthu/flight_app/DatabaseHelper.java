@@ -16,7 +16,8 @@ import java.util.ArrayList;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     private ArrayList<String> data;
-    public static final String FLIGHT_TABLE = "FLIGHT_TABLE";
+    private int colCount;
+    private static final String FLIGHT_TABLE = "FLIGHT_TABLE";
     public static final String COLUMN_FLIGHT_NUMBER     = "FLIGHT_NUMBER";
     public static final String COLUMN_DEPARTURE_CTRY    = "DEPARTURE_CTRY";
     public static final String COLUMN_ARRIVAL_CTRY      = "ARRIVAL_CTRY";
@@ -43,6 +44,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * second constructor only for reading data
+     * not inherently meant to add data to the database
+     * @param context
+     */
+    public DatabaseHelper(Context context) {
+        super(context, "Flights.db", null, 1);
+        this.data=data; //ArrayList that is used to transfer data
+    }
+
+    /**
      * creates the table with the following columns with flight number as the key
      * @param db the database being created
      */
@@ -50,6 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //table creation use variables for easy modification
+        Log.d("TAG", "onCreate: creating table");
         String createTableStatement=
                 "CREATE TABLE " + FLIGHT_TABLE +
                         "(" +
@@ -60,12 +72,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                               COLUMN_ARRIVAL_AIRPORT   + " STRING, " +
                               COLUMN_DEPARTURE_TERM    + " STRING, " +
                               COLUMN_ARRIVAL_TERM      + " STRING, " +
+                              COLUMN_DEPARTURE_IATA    + " STRING, " +
+                              COLUMN_ARRIVAL_IATA      + " STRING, " +
                               COLUMN_DEPARTURE_DATE    + " STRING, " +
                               COLUMN_ARRIVAL_DATE      + " STRING, " +
                               COLUMN_DEPARTURE_TIME    + " STRING, " +
-                              COLUMN_ARRIVAL_TIME      + " STRING, " +
-                              COLUMN_ARRIVAL_IATA      + " STRING, " +
-                              COLUMN_DEPARTURE_IATA    + " STRING"   +
+                              COLUMN_ARRIVAL_TIME      + " STRING" +
                         ") ";
 
         db.execSQL(createTableStatement);
@@ -89,9 +101,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
     public boolean addFlightData()
     {
-        for (int i = 0; i < data.size(); i++) {
-            Log.d("TAG", "addFlightData: " + data.get(i));
-        };
+
+        if (data.size() == 5) return false; //if default values
+        Log.d("TAG", "addFlightData: Data<String>.size() not right size");
+
+        Log.d("TAG", "addFlightData: cv.put data");
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -113,6 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
             long result = db.insert("FLIGHT_TABLE", null, cv);
+        Log.d("TAG", "addFlightData: db insert? " + result);
             db.close();
 
         // Log the result of the insert
@@ -144,8 +159,73 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 rowIndex++;
             } while (cursor.moveToNext());
         }
-
         cursor.close(); // Always close the cursor to free resources
         return tableData;
+    }
+
+    public Cursor getFlightDataByFlightNumber(String flightNumber){
+        Log.d("TAG", "getFlightDataByFlightNumber: flightnum "+ flightNumber);
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql =
+                "SELECT  * FROM " + FLIGHT_TABLE + " WHERE " + COLUMN_FLIGHT_NUMBER +
+                        " = ?";
+        Cursor cursor = db.rawQuery(sql, new String[]{flightNumber});
+
+        /*
+        // Use parameterized queries to avoid SQL injection
+        Cursor cursor =  db.query(
+                FLIGHT_TABLE,                    // Table name
+                null,                         // Columns to fetch (null fetches all columns)
+                COLUMN_FLIGHT_NUMBER+" = ?",          // WHERE clause
+                new String[]{flightNumber},   // WHERE arguments
+                null,                         // GROUP BY
+                null,                         // HAVING
+                null                          // ORDER BY
+        );
+         */
+
+        if (cursor != null && cursor.moveToFirst()) {
+            Log.d("DB_METHOD", "Query successful, cursor returned with count: " + cursor.getCount());
+        } else {
+            Log.e("DB_METHOD", "Query returned a null cursor.");
+        }
+
+        Log.d("DB_METHOD", "getFlightDataByFlightNumber: " + cursor.getString(0));
+        return cursor;
+    }
+
+    /**
+     * this method will delete the current selected flight
+     * @param flightNumber
+     */
+    @SuppressLint("NotifyDataSetChanged")
+    public void deleteFlightData(String flightNumber, Adapter adapter)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Delete the row where the flight number matches
+        String whereClause = COLUMN_FLIGHT_NUMBER + " = ?";
+        String[] whereArgs = new String[] { flightNumber };
+
+        int rowsDeleted = db.delete(FLIGHT_TABLE, whereClause, whereArgs);
+        adapter.notifyDataSetChanged();
+
+        if (rowsDeleted > 0) {
+            Log.d("Database", "Row with flight number " + flightNumber + " deleted.");
+        } else {
+            Log.d("Database", "No row with the given flight number found.");
+        }
+    }
+
+    /**
+     * returns the closest flight date to the current day
+     * @return
+     */
+    public Cursor getClosestFlight() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM FLIGHT_TABLE " +
+                "ORDER BY ABS(julianday(ARRIVAL_DATE) - julianday('now')) ASC " +
+                "LIMIT 1";
+        return db.rawQuery(query, null);
     }
 }

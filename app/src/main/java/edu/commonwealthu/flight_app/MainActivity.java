@@ -1,8 +1,26 @@
 package edu.commonwealthu.flight_app;
 
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_AIRPORT;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_CTRY;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_DATE;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_IATA;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_TERM;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_ARRIVAL_TIME;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_AIRPORT;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_CTRY;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_DATE;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_IATA;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_TERM;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_DEPARTURE_TIME;
+import static edu.commonwealthu.flight_app.DatabaseHelper.COLUMN_FLIGHT_NUMBER;
+
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -14,6 +32,7 @@ import android.content.pm.ActivityInfo;
 
 import edu.commonwealthu.flight_app.databinding.ActivityMainBinding;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,6 +49,7 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,17 +67,18 @@ public class MainActivity extends AppCompatActivity {
     private Adapter adapter;
     ArrayList<String> items;
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        edu.commonwealthu.flight_app.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        
         //current display information of the device
         displayWidth = getResources().getDisplayMetrics().widthPixels;
         displayHeight = getResources().getDisplayMetrics().heightPixels;
 
-        super.onCreate(savedInstanceState);
-
-        edu.commonwealthu.flight_app.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
 
         //Lock screen orientation
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -71,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         //get RecycleView
         recycle = findViewById(R.id.flightCards);
-        populate_recycle();
+        cardViewCreation();
 
         //on button click calls add_view method to display AlertDialog for adding flight
         //information
@@ -83,27 +104,13 @@ public class MainActivity extends AppCompatActivity {
                 throw new RuntimeException(e);
             }
         });
-    }
 
-    /**
-     * populates the recycle view of the app and gathers data from the database to display
-     */
-    private void populate_recycle()
-    {
-        items = new ArrayList<>();
-        items.add("first card");
-        items.add("first card");
-        items.add("2");
-        items.add("second card");
-        items.add("second card");
-        items.add("3");
-        items.add("third card");
-        items.add("third card");
-        items.add("4");
-
-        recycle.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new Adapter(this, items);
-        recycle.setAdapter(adapter);
+        findViewById(R.id.search).setOnClickListener(view -> {
+                TextView header_fnum = findViewById(R.id.header_fNum);
+                DatabaseHelper db = new DatabaseHelper(MainActivity.this);
+                db.deleteFlightData((String) header_fnum.getText(), adapter);
+                cardViewCreation();
+        });
     }
 
     /** Allow for user to add a flight
@@ -114,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
      *
      */
     private void add_flight() throws JSONException {
-
         //inflate window with ui to take in input
         LayoutInflater inflater = getLayoutInflater();
         View add_flight_view = inflater.inflate(R.layout.add_flight_menu, null);
@@ -122,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         EditText input_field = add_flight_view.findViewById(R.id.input_field);
         Button confirm = add_flight_view.findViewById(R.id.confirm_button);
 
+        //build alert dialog for adding a new flight
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(add_flight_view);
         AlertDialog dialog = builder.create();
@@ -132,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             Plane newFlight = null;
             newFlight = new Plane(input_field.getText().toString());
 
-
+            dialog.dismiss();
             try {    //buffer to wait for the call back
                 Thread.sleep(2000);
 
@@ -141,14 +148,16 @@ public class MainActivity extends AppCompatActivity {
             }
 
             curFlight= newFlight; //update the current flight to be displayed
-
+            Log.d("TAG", "add_flight: about to store flight data!");
             //add flight to the database
             try {
                 DatabaseHelper databaseHelper =
                         new DatabaseHelper(MainActivity.this, curFlight.getInfo());
                 boolean b = databaseHelper.addFlightData();
-                Log.d("TAG", " do i work?: " + b);
-                Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
+                Log.d("TAG", "add_flight: done adding data");
+                if (b)
+                    Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
+
             } catch (JSONException e) {
                 Toast.makeText(MainActivity.this, "error adding flight",
                         Toast.LENGTH_SHORT).show();
@@ -156,12 +165,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {   //set current flight info for display
-                setInfo();
+                setInfo(curFlight.getInfo(), false);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            dialog.dismiss();
-
             cardViewCreation();
         });
 
@@ -176,10 +183,15 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Display information of current displayed flight
+     * Used when adding flight
      */
-    private void setInfo() throws JSONException {
-        ArrayList<String> data = curFlight.getInfo(); //grabs ArrayList<String>
-        // from backend
+    private void setInfo(ArrayList<String> newData, boolean backend) throws JSONException {
+        ArrayList<String> data;
+        if (!backend) {
+            data = curFlight.getInfo(); //grabs ArrayList<String>
+        } else {
+            data = newData;
+        }
 
         //clear past information and sets up for new info
         // dynamically set size here in case backend is changed to support more info
@@ -192,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
         //iterates starting a 1 to avoid Flight number
         for (int i = 1; i < data.size(); i++) {
-            if(i == 5) i=i+2;
+            if(i == 7) i=i+2;
             TextView txt = new TextView(this);
 
             txt.setGravity(Gravity.CENTER);
@@ -212,27 +224,55 @@ public class MainActivity extends AppCompatActivity {
     /**
      *  creates cardView object to add to recycleView
      */
+    @SuppressLint("Range")
     private void cardViewCreation(){
+        Log.d("TAG", "cardViewCreation: creating card");
+        items = new ArrayList<>(); //data to send to recycle view adapter to read
 
-        items = new ArrayList<>(); //data to send to reycle view adapter to read
-
-        try {
-            DatabaseHelper db = new DatabaseHelper(MainActivity.this, curFlight.getInfo());
-            String[][] parasable = db.returnData();
-            for (int i = 0; i < parasable.length; i++) {
-                for (int j = 0; j < parasable[0].length; j++) {
-                    System.out.println(parasable[i][j]);
-
-                }
-            }
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
+        DatabaseHelper db = new DatabaseHelper(MainActivity.this);
+        String[][] parasable = db.returnData();
+        for (int i = 0; i < parasable.length; i++) {
+            Log.d("TAG", "cardViewCreation: loop data");
+                items.add(parasable[i][0]); //flight num
+                items.add(parasable[i][7]); //departure iata
+                items.add(parasable[i][8]); //arrival   iata
+                items.add(parasable[i][9]); //date
         }
 
-        //CardView temp = new CardView(this);
-        //temp.getCardElevation();
+        //if card is clicked run below
+        recycle.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new Adapter(this, items, position ->{
+            String selectedItem = items.get(position);
+            int sfn = position * 4;  //cards take 4 values, need to scale for that
+            String selectedFlightNumber = items.get(sfn);
+            Log.d("TAG", "cardViewCreation: " + selectedFlightNumber);
 
-        //place stuff from
+            // Fetch flight details from the database using the flight number
+            Cursor cursor = db.getFlightDataByFlightNumber(selectedFlightNumber);
+
+            //used to store data from database on card click
+            ArrayList<String> gatherData = new ArrayList<>();
+
+            // Extract flight details from the cursor
+            if (cursor != null && cursor.moveToFirst()) {
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_FLIGHT_NUMBER)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_CTRY)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_CTRY)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_AIRPORT)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_AIRPORT)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_TERM)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_TERM)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_IATA)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_IATA)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_DATE)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_DATE)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_DEPARTURE_TIME)));
+                gatherData.add(cursor.getString(cursor.getColumnIndex(COLUMN_ARRIVAL_TIME)));
+                setInfo(gatherData, true);
+            }
+            if (cursor != null) cursor.close(); // Close the cursor
+        });
+        recycle.setAdapter(adapter);
     }
 
 

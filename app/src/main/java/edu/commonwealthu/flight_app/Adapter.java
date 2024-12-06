@@ -6,26 +6,39 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import org.json.JSONException;
+
 import java.util.List;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
 
     private final LayoutInflater layoutInflater;
     private final List<String> data;
+    private static OnItemClickListener listener;
+
+    public interface  OnItemClickListener {
+        void onItemClick(int position) throws JSONException;
+    }
 
     /**
      * constructor takes context for layout inflation and data set
      * @param context context to dislpay info in
      * @param data Arraylist of data (Strings)
      */
-    Adapter(Context context, List<String> data){
+    public Adapter(Context context, List<String> data, OnItemClickListener listener){
         this.layoutInflater = LayoutInflater.from(context);
         this.data = data;
+        Adapter.listener = listener;
     }
+
 
     /**
      * creates each ViewHolder that holds current view being worked on
@@ -50,10 +63,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int i) {
-
-        i=i*3;  //used to access right ith information in the list
+        Log.d("Adapter", "onBindViewHolder:");
+        i=i*4;  //used to access right ith information in the list
 
         //bind the textview with the data received
+        String fnum = data.get(i++);
+        ViewHolder.textFnum.setText(fnum);
+
         String dep = data.get(i++);
         ViewHolder.textDepart.setText(dep);
 
@@ -63,6 +79,19 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         String date = data.get(i++);
         ViewHolder.textDate.setText(date);
 
+
+        // Add a click animation for when specific cardview is selected
+        holder.itemView.setOnClickListener(v -> {
+            clickAnimation(holder.itemView);
+            int position = holder.getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                try {
+                    listener.onItemClick(position);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     /**
@@ -71,14 +100,29 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
      */
     @Override
     public int getItemCount() {
-        return data.size()/3;
+        return data.size()/4;
     }
+
+    private void clickAnimation(View itemView) {
+        ScaleAnimation scaleAnimation = new ScaleAnimation(
+                1.0f, 1.05f,  // Scale from 100% to 105% in X
+                1.0f, 1.05f,  // Scale from 100% to 105% in Y
+                Animation.RELATIVE_TO_SELF, 0.5f,  // Pivot at center X
+                Animation.RELATIVE_TO_SELF, 0.5f   // Pivot at center Y
+        );
+        scaleAnimation.setDuration(150); // Duration in milliseconds
+        scaleAnimation.setRepeatMode(Animation.REVERSE);
+        scaleAnimation.setRepeatCount(1); // Reverse animation after scaling
+        itemView.startAnimation(scaleAnimation);
+    }
+
 
     /**
      * Used for setting data to the current view holder being constructed (current card)
      */
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
+        static TextView textFnum;
         static TextView textDepart;
         static TextView textArrival;
         static TextView textDate;
@@ -89,9 +133,30 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
          */
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            textFnum   = itemView.findViewById(R.id.card_fnum);
             textDepart = itemView.findViewById(R.id.departure_icac);
             textArrival= itemView.findViewById(R.id.arrival_icac);
             textDate   = itemView.findViewById(R.id.card_date);
+
+            itemView.setOnClickListener(v ->  {
+                Log.d("TAG", "ViewHolder: I'M IN ADAPTER");
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    try {
+                        listener.onItemClick(position);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
         }
+    }
+
+    public void deleteItem(int position) {
+        data.remove(position+3);
+        data.remove(position+2);
+        data.remove(position+1);
+        data.remove(position);
+        notifyItemRangeRemoved(position,position+4);
     }
 }

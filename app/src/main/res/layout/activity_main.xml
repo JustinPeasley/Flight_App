@@ -30,8 +30,8 @@
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/search"
-                    android:src="@drawable/search"
+                    android:contentDescription="@string/minus"
+                    android:src="@drawable/minus"
                     app:layout_constraintLeft_toLeftOf="parent"
                     tools:ignore="MissingConstraints" />
 
@@ -80,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="@string/home_header"
-                    android:textSize="50sp"
+                    android:textSize="45sp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -108,9 +108,11 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/flightCards"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/frameLayout"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintVertical_bias="0.487"
+            tools:layout_editor_absoluteX="0dp">
 
         </androidx.recyclerview.widget.RecyclerView>
 
