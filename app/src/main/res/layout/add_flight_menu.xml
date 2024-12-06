@@ -37,8 +37,12 @@
         android:id="@+id/confirm_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirm"
+        style="@style/CustomButtonStyle"
+        android:text="@string/confirm"
         android:textSize="15sp"
+        android:backgroundTint="@color/l_purple"
+        android:elevation="10dp"
+
 
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

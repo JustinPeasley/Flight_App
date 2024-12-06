@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Flight_watch</string>
     <string name="action_settings">Settings</string>
-    <string name="home_header">Flight Number</string>
+    <string name="home_header">Select Flight</string>
 
     <!-- button descriptions -->
     <string name="minus">Remove flight</string>
@@ -10,5 +10,6 @@
     <!-- placeholder values (can act as defaults) -->
     <string name="temp_icac">...</string>
     <string name="temp_date">1-1-2024</string>
+    <string name="confirm">Confirm</string>
 
 </resources>

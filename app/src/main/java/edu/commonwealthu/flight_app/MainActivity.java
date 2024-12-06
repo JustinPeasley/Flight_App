@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,7 +44,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -134,42 +137,66 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
+        ////////---------------------------------------
+
+        // Inflate the loading overlay layout
+        LayoutInflater overlayInflater = getLayoutInflater();
+        View loadingOverlay = overlayInflater.inflate(R.layout.loading_dimmer, null);
+
+        // Find the dim background and spinner in the inflated layout
+        View dimBackground = loadingOverlay.findViewById(R.id.dimBackground);
+        ProgressBar loadingSpinner = loadingOverlay.findViewById(R.id.loadingSpinner);
+
+        // Add the overlay to the current layout (e.g., a FrameLayout or RelativeLayout)
+        CoordinatorLayout parentLayout = findViewById(R.id.main_screen); // Your parent layout
+        parentLayout.addView(loadingOverlay);
+
+        // Initially hide the dim background and spinner
+        dimBackground.setVisibility(View.GONE);
+        loadingSpinner.setVisibility(View.GONE);
+
+
+        //---------------------------------------------
+
         confirm.setOnClickListener(v -> { // on confirm button click
             //make a plane object with new fnum call
-            Plane newFlight = null;
-            newFlight = new Plane(input_field.getText().toString());
+            Plane newFlight = new Plane(input_field.getText().toString());
 
-            dialog.dismiss();
-            try {    //buffer to wait for the call back
-                Thread.sleep(2000);
+            dialog.dismiss(); //dismiss the alert dialog when confirm flight number
 
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            // Show the loading spinner and dim background while processing data
+            dimBackground.setVisibility(View.VISIBLE);
+            loadingSpinner.setVisibility(View.VISIBLE);
 
-            curFlight= newFlight; //update the current flight to be displayed
-            Log.d("TAG", "add_flight: about to store flight data!");
-            //add flight to the database
-            try {
-                DatabaseHelper databaseHelper =
-                        new DatabaseHelper(MainActivity.this, curFlight.getInfo());
-                boolean b = databaseHelper.addFlightData();
-                Log.d("TAG", "add_flight: done adding data");
-                if (b)
-                    Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(() -> {
+                curFlight= newFlight; //update the current flight to be displayed
+                Log.d("TAG", "add_flight: about to store flight data!");
+                //add flight to the database
+                try {
+                    DatabaseHelper databaseHelper =
+                            new DatabaseHelper(MainActivity.this, curFlight.getInfo());
+                    boolean b = databaseHelper.addFlightData();
+                    Log.d("TAG", "add_flight: done adding data");
+                    if (b)
+                        Toast.makeText(MainActivity.this, "Flight added", Toast.LENGTH_SHORT).show();
 
-            } catch (JSONException e) {
-                Toast.makeText(MainActivity.this, "error adding flight",
-                        Toast.LENGTH_SHORT).show();
-                throw new RuntimeException(e);
-            }
+                } catch (JSONException e) {
+                    Toast.makeText(MainActivity.this, "error adding flight",
+                            Toast.LENGTH_SHORT).show();
+                    throw new RuntimeException(e);
+                }
 
-            try {   //set current flight info for display
-                setInfo(curFlight.getInfo(), false);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
-            }
-            cardViewCreation();
+                try {   //set current flight info for display
+                    setInfo(curFlight.getInfo(), false);
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+                cardViewCreation();
+
+                // Hide the loading spinner and dim background after processing
+                dimBackground.setVisibility(View.GONE);
+                loadingSpinner.setVisibility(View.GONE);
+            },2000); //delay 2000 ms, keeps ui thread active
         });
 
         // Set the dimensions of the dialog programmatically
