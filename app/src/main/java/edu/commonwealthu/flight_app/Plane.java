@@ -54,7 +54,7 @@ public class Plane {
         //build the api call
         Request request = new Request.Builder()
                 .url(uriCall)
-                .header("x-rapidapi-key", "1aa8bbc1b2msh5062d99bafbbe82p109479jsnee0b36ad902a")
+                .header("x-rapidapi-key", "")
                 .header("x-rapidapi-host", "aerodatabox.p.rapidapi.com")
                 .get()
                 .build();
